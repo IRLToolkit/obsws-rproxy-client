@@ -60,7 +60,7 @@ jobs:
         shell: bash
         run: |
           FILE_DATE=$(date +%Y-%m-%d)
-          FILE_NAME=$FILE_DATE-${{ env.RPROXY_GIT_HASH }}-${{ env.RPROXY_GIT_TAG }}-linux64
+          FILE_NAME=obsws-rproxy-client-$FILE_DATE-${{ env.RPROXY_GIT_HASH }}-linux64
           echo "FILE_NAME=${FILE_NAME}" >> $GITHUB_ENV
           cd ${{ github.workspace }}/build
           cp obsws-rproxy-client "${FILE_NAME}"
