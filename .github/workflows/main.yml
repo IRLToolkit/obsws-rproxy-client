@@ -45,6 +45,7 @@ jobs:
            cmake \
            git \
            pkg-config \
+           qt5-default \
            qtbase5-dev \
            libqt5websockets5
       - name: 'Configure'
