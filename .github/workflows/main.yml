@@ -40,14 +40,11 @@ jobs:
           sudo dpkg --add-architecture amd64
           sudo apt-get -qq update
           sudo apt-get install -y \
-           build-essential \
            checkinstall \
            cmake \
-           git \
-           pkg-config \
            qt5-default \
            qtbase5-dev \
-           libqt5websockets5
+           libqt5websockets5-dev
       - name: 'Configure'
         shell: bash
         run: |

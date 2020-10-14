@@ -27,10 +27,10 @@ if(WIN32)
 endif()
 
 # Find the QtWidgets library
-find_package(Qt5 REQUIRED COMPONENTS Widgets WebSockets)
+find_package(Qt5 COMPONENTS Core Widgets WebSockets REQUIRED)
 
 # Tell CMake to create the obsws-rproxy-client executable
 add_executable(obsws-rproxy-client main.cpp mainwindow.cpp mainwindow.ui resources.qrc)
 
 # Add the Qt5 Widgets for linking
-target_link_libraries(obsws-rproxy-client Qt5::Widgets Qt5::WebSockets)
+target_link_libraries(obsws-rproxy-client Qt5::Core Qt5::Widgets Qt5::WebSockets)
