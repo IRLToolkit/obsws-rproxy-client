@@ -1,0 +1,79 @@
+name: 'CI Multiplatform Build'
+
+on:
+  push:
+    paths-ignore:
+      - '**.md'
+    branches:
+      - master
+    tags:
+      - '*'
+
+jobs:
+  ubuntu64:
+    name: 'Linux/Ubuntu 64-bit'
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: 'Fetch Git Tags'
+        run: |
+          git fetch --prune --unshallow
+          echo "RPROXY_GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)" >> $GITHUB_ENV
+          echo "RPROXY_GIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "RPROXY_GIT_TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+      - name: 'Check for Github Labels'
+        if: github.event_name == 'pull_request'
+        run: |
+          LABELS_URL="$(echo ${{ github.event.pull_request.url }} | sed s'/pulls/issues/')"
+          LABEL_FOUND="$(curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "${LABELS_URL}/labels" | sed -n 's/.*"name": "\(.*\)",/\1/p' | grep 'Seeking Testers' || true)"
+          if [ "${LABEL_FOUND}" = "Seeking Testers" ]; then
+            echo "SEEKING_TESTERS=1" >> $GITHUB_ENV
+          else
+            echo "SEEKING_TESTERS=0" >> $GITHUB_ENV
+          fi
+      - name: Install prerequisites (Apt)
+        shell: bash
+        run: |
+          sudo dpkg --add-architecture amd64
+          sudo apt-get -qq update
+          sudo apt-get install -y \
+           build-essential \
+           checkinstall \
+           cmake \
+           libqt5x11extras5-dev \
+           pkg-config \
+           python3-dev \
+           qtbase5-dev \
+           libqt5svg5-dev \
+      - name: 'Configure'
+        shell: bash
+        run: |
+          mkdir ./build
+          cd ./build
+          cmake -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/obsws-rproxy-client-portable" ..
+      - name: 'Build'
+        shell: bash
+        working-directory: ${{ github.workspace }}/build
+        run: make -j4
+      - name: 'Package'
+        if: success() && (github.event_name != 'pull_request' || env.SEEKING_TESTERS == '1')
+        shell: bash
+        run: |
+          FILE_DATE=$(date +%Y-%m-%d)
+          FILE_NAME=$FILE_DATE-${{ env.RPROXY_GIT_HASH }}-${{ env.RPROXY_GIT_TAG }}-linux64.tar.gz
+          echo "FILE_NAME=${FILE_NAME}" >> $GITHUB_ENV
+          cd ./build
+          sudo checkinstall --default --install=no --pkgname=obsws-rproxy-client --fstrans=yes --backup=no --pkgversion="$(date +%Y%m%d)-git" --deldoc=yes
+          mkdir ../nightly
+          tar -cvzf "${FILE_NAME}" *.deb
+          mv "${FILE_NAME}" ../nightly/
+          cd -
+      - name: 'Publish'
+        if: success() && (github.event_name != 'pull_request' || env.SEEKING_TESTERS == '1')
+        uses: actions/upload-artifact@v2-preview
+        with:
+          name: '${{ env.FILE_NAME }}'
+          path: './nightly/*.tar.gz'
