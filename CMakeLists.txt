@@ -10,13 +10,8 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
-# There may be a way to tell up front if Qt5 is going to be found, but I haven't found
-# a foolproof way to do it yet, so settle for the default error message for now.
-#if(NOT CMAKE_PREFIX_PATH AND NOT Qt5Widgets_DIR)
-#    message(WARNING "CMAKE_PREFIX_PATH is not defined, so find_package may not work. Set the CMAKE_PREFIX_PATH "
-#            "environment variable to the install prefix of Qt 5, either on the command line as "
-#            "-DCMAKE_PREFIX_PATH=\"path/to/Qt5/lib/cmake\" or with set(CMAKE_PREFIX_PATH path/to/Qt5/lib/cmake)")
-#endif(NOT CMAKE_PREFIX_PATH AND NOT Qt5Widgets_DIR)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Add a compiler flag
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
@@ -34,3 +29,44 @@ add_executable(obsws-rproxy-client main.cpp mainwindow.cpp mainwindow.ui resourc
 
 # Add the Qt5 Widgets for linking
 target_link_libraries(obsws-rproxy-client Qt5::Core Qt5::Widgets Qt5::WebSockets)
+
+if(WIN32)
+    if(MSVC)
+        # Enable Multicore Builds and disable FH4 (to not depend on VCRUNTIME140_1.DLL)
+	    add_definitions(/MP /d2FH4-)
+    endif()
+
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+		set(ARCH_NAME "64bit")
+		set(OBS_BUILDDIR_ARCH "build64")
+	else()
+		set(ARCH_NAME "32bit")
+		set(OBS_BUILDDIR_ARCH "build32")
+	endif()
+    set(RELEASE_DIR "${PROJECT_SOURCE_DIR}/release")
+    add_custom_command(TARGET obsws-rproxy-client POST_BUILD
+		# If config is Release, package release files
+		COMMAND if $<CONFIG:Release>==1 (
+			"${CMAKE_COMMAND}" -E make_directory
+			"${RELEASE_DIR}/${ARCH_NAME}")
+
+		COMMAND if $<CONFIG:Release>==1 ("${CMAKE_COMMAND}" -E copy
+			"$<TARGET_FILE:obsws-rproxy-client>"
+			"${RELEASE_DIR}/${ARCH_NAME}")
+
+		# If config is RelWithDebInfo, package release files
+		COMMAND if $<CONFIG:RelWithDebInfo>==1 (
+			"${CMAKE_COMMAND}" -E make_directory
+			"${RELEASE_DIR}/${ARCH_NAME}")
+
+		COMMAND if $<CONFIG:RelWithDebInfo>==1 ("${CMAKE_COMMAND}" -E copy
+			"$<TARGET_FILE:obsws-rproxy-client>"
+			"${RELEASE_DIR}/${ARCH_NAME}")
+
+		COMMAND if $<CONFIG:RelWithDebInfo>==1 ("${CMAKE_COMMAND}" -E copy
+			"$<TARGET_PDB_FILE:obsws-rproxy-client>"
+			"${RELEASE_DIR}/${ARCH_NAME}")
+	)
+	# --- End of sub-section ---
+
+endif()

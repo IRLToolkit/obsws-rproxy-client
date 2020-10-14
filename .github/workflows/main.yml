@@ -60,12 +60,11 @@ jobs:
         shell: bash
         run: |
           FILE_DATE=$(date +%Y-%m-%d)
-          FILE_NAME=$FILE_DATE-${{ env.RPROXY_GIT_HASH }}-${{ env.RPROXY_GIT_TAG }}-linux64.tar.gz
+          FILE_NAME=$FILE_DATE-${{ env.RPROXY_GIT_HASH }}-${{ env.RPROXY_GIT_TAG }}-linux64
           echo "FILE_NAME=${FILE_NAME}" >> $GITHUB_ENV
           cd ${{ github.workspace }}/build
-          sudo checkinstall --default --install=no --pkgname=obsws-rproxy-client --fstrans=yes --backup=no --pkgversion="$(date +%Y%m%d)-git" --deldoc=yes
+          cp obsws-rproxy-client "${FILE_NAME}"
           mkdir ../nightly
-          tar -cvzf "${FILE_NAME}" *.deb
           mv "${FILE_NAME}" ../nightly/
           cd -
       - name: 'Publish'
@@ -73,4 +72,4 @@ jobs:
         uses: actions/upload-artifact@v2-preview
         with:
           name: '${{ env.FILE_NAME }}'
-          path: './nightly/*.tar.gz'
+          path: './nightly/*'
