@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QtWebSockets/QWebSocket>
+#include <QSettings>
 #include <QTime>
 #include <QTimer>
 #include <QString>
@@ -38,6 +39,7 @@ private Q_SLOTS:
 
 private:
     Ui::MainWindow *ui;
+    QSettings settings;
     QWebSocket localSocket;
     QWebSocket remoteSocket;
     QTimer *reconnectTimer;

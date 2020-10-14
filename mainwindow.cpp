@@ -24,6 +24,15 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    ui->remoteServerLineEdit->setText(settings.value("remoteServerUrl", "").toString());
+    if (settings.value("autoRemoteReconnect", true).toBool()) {
+        ui->remoteServerReconnectCheckBox->setCheckState(Qt::Checked);
+    } else {
+        ui->remoteServerReconnectCheckBox->setCheckState(Qt::Unchecked);
+    }
+    ui->wsHostnameLineEdit->setText(settings.value("localServerHostname", "127.0.0.1").toString());
+    ui->wsPortSpinBox->setValue(settings.value("localServerPort", 4444).toInt());
+
     connect(ui->remoteConnectButton, &QPushButton::clicked, this, &MainWindow::onRemoteConnectClicked);
     connect(ui->localConnectButton, &QPushButton::clicked, this, &MainWindow::onLocalConnectClicked);
     
@@ -47,6 +56,17 @@ MainWindow::~MainWindow()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+    settings.setValue("remoteServerUrl", ui->remoteServerLineEdit->text());
+    if (ui->remoteServerReconnectCheckBox->checkState() == Qt::Checked) {
+        settings.setValue("autoRemoteReconnect", true);
+    } else {
+        settings.setValue("autoRemoteReconnect", false);
+    }
+    settings.setValue("localServerHostname", ui->wsHostnameLineEdit->text());
+    settings.setValue("localServerPort", ui->wsPortSpinBox->value());
+
+    qDebug() << settings.fileName();
+
     if (localSocket.isValid()) {
         localSocket.close();
     }

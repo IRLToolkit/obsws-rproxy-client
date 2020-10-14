@@ -168,9 +168,6 @@
       </item>
       <item row="2" column="1">
        <widget class="QLineEdit" name="wsHostnameLineEdit">
-        <property name="text">
-         <string>127.0.0.1</string>
-        </property>
         <property name="maxLength">
          <number>100</number>
         </property>
@@ -191,9 +188,6 @@
         <property name="maximum">
          <number>65535</number>
         </property>
-        <property name="value">
-         <number>4444</number>
-        </property>
        </widget>
       </item>
       <item row="1" column="0">
@@ -206,7 +200,7 @@
       <item row="1" column="1">
        <widget class="QCheckBox" name="remoteServerReconnectCheckBox">
         <property name="checked">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
        </widget>
       </item>
