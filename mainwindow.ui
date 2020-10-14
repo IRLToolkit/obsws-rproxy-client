@@ -25,6 +25,10 @@
   <property name="windowTitle">
    <string>obs-websocket Remote Proxy Client</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="resources.qrc">
+    <normaloff>:/data/images/OBSWS_Icon.png</normaloff>:/data/images/OBSWS_Icon.png</iconset>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="2" column="0" colspan="2">

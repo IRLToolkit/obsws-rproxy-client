@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="/">
+    <file>data/images/OBSWS_Icon.png</file>
+    <file>data/images/OBSWS_Logo.png</file>
     <file>data/images/checkmark.png</file>
     <file>data/images/times.png</file>
   </qresource>
