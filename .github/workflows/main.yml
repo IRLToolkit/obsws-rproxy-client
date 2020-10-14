@@ -43,11 +43,10 @@ jobs:
            build-essential \
            checkinstall \
            cmake \
-           libqt5x11extras5-dev \
+           git \
            pkg-config \
-           python3-dev \
            qtbase5-dev \
-           libqt5svg5-dev \
+           libqt5websockets5
       - name: 'Configure'
         shell: bash
         run: |
