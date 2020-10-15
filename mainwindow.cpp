@@ -65,8 +65,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
     settings.setValue("localServerHostname", ui->wsHostnameLineEdit->text());
     settings.setValue("localServerPort", ui->wsPortSpinBox->value());
 
-    qDebug() << settings.fileName();
-
     if (localSocket.isValid()) {
         localSocket.close();
     }
@@ -113,7 +111,7 @@ void MainWindow::onReconnectTimerTimeout()
                     delay(100);
                     connectLoops++;
                 } else {
-                    ui->remoteConnectButton->setText("Connect Failed. Resetting...");
+                    ui->remoteConnectButton->setText("Connect Failed. Retrying...");
                     ui->remoteConnectButton->setEnabled(false);
                     break;
                 }
@@ -172,8 +170,8 @@ void MainWindow::onLocalConnectClicked()
                 return;
             } else if (localSocket.state() == QAbstractSocket::ConnectingState) {
                 if (connectLoops > 100) {
-                    displayError(QString("Failed to connect to local obs-websocket server because the request timed out."));
                     localSocket.close();
+                    displayError(QString("Failed to connect to local obs-websocket server because the request timed out."));
                     return;
                 }
                 delay(100);
@@ -205,6 +203,25 @@ void MainWindow::onRemoteConnectClicked()
             ui->remoteConnectButton->setText("Connecting...");
             ui->remoteConnectButton->setEnabled(false);
             remoteSocket.open(QUrl(connectUrl));
+            int connectLoops = 0;
+            while (true) {
+                if (remoteSocket.state() == QAbstractSocket::ConnectedState) {
+                    return;
+                } else if (remoteSocket.state() == QAbstractSocket::ConnectingState) {
+                    if (connectLoops > 100) {
+                        remoteSocket.close();
+                        stopReconnectTimer();
+                        displayError(QString("Failed to connect to Remote Proxy server because the request timed out."));
+                        return;
+                    }
+                    delay(100);
+                    connectLoops++;
+                } else {
+                    stopReconnectTimer();
+                    displayError(QString("Failed to connect to Remote Proxy server with error: %1").arg(remoteSocket.errorString()));
+                    return;
+                }
+            }
         } else {
             displayError(QString("You must be connected to the obs-websocket Server before you can connect to the remote server."));
             return;
